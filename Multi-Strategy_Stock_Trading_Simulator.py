@@ -278,3 +278,42 @@ for strategy_name, metrics in performance_metrics.items():
     print("\nTrade Log:")
     for log in strategies[strategy_name]['tradelog']:
         print(log)
+import plotly.graph_objs as go
+
+# Create a new DataFrame to store the portfolio values over time for each strategy
+portfolio_values = pd.DataFrame(index=data.index)
+
+# Store the portfolio values for each strategy over time
+for strategy_name, strategy_vars in strategies.items():
+    portfolio_value_over_time = [strategy_vars['cash'] + strategy_vars['holdings'] * data['Close'][i] for i in range(len(data))]
+    portfolio_values[strategy_name] = portfolio_value_over_time
+
+# Calculate profit/loss for each strategy relative to the initial cash
+profits = portfolio_values - initial_cash
+
+# Create the figure to plot the profits over time
+profit_fig = go.Figure()
+
+# Add a line plot for each strategy's profits
+for strategy_name in strategies.keys():
+    profit_fig.add_trace(go.Scatter(
+        x=profits.index,
+        y=profits[strategy_name],
+        mode='lines',
+        name=f'{strategy_name} Profit',
+        line=dict(width=2)
+    ))
+
+# Customize the layout of the graph
+profit_fig.update_layout(
+    title="Profit/Loss Over Time for Different Strategies",
+    xaxis_title="Date",
+    yaxis_title="Profit/Loss (INR)",
+    xaxis_rangeslider_visible=False,
+    template="plotly_dark",
+    legend_title="Strategies"
+)
+
+# Show the graph
+profit_fig.show()
+        
